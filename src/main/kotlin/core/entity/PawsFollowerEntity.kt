@@ -1,21 +1,16 @@
 package core.entity
 
-import com.destroystokyo.paper.ParticleBuilder
 import com.destroystokyo.paper.entity.ai.VanillaGoal
 import core.commands.PawsFollowerCommand
 import core.commands.PawsFollowerCommandAttackTarget
 import core.commands.PawsFollowerCommandType
-import listeners.PlayerEntityActionsListener
+import core.metadata.PawsMetadata
 import org.bukkit.Bukkit
-import org.bukkit.Material
-import org.bukkit.Particle
-import org.bukkit.entity.EntityType
 import org.bukkit.entity.Mob
 import org.bukkit.entity.Silverfish
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.metadata.FixedMetadataValue
 import org.bukkit.plugin.Plugin
 
 class PawsFollowerEntity(val plugin: Plugin, val mobEntity: Mob, override val configuration: PawsFollowerConfiguration<Mob>) :
@@ -23,7 +18,7 @@ class PawsFollowerEntity(val plugin: Plugin, val mobEntity: Mob, override val co
     override fun onMobTame() {
         // Reset current aggression
         mobEntity.target = null
-        for (goal in configuration.removeGoals) {
+        for (goal in configuration.removeGoalKeys) {
             Bukkit.getMobGoals().removeGoal(mobEntity, goal)
         }
     }
@@ -38,6 +33,16 @@ class PawsFollowerEntity(val plugin: Plugin, val mobEntity: Mob, override val co
         val offItem = player.inventory.itemInOffHand
         val targetEntity = event.rightClicked
         val server = event.player.server
+
+        // Check ownership
+        if (PawsMetadata.hasOwner(plugin, targetEntity)) {
+            if (PawsMetadata.isOwner(plugin, targetEntity, player)) {
+                player.sendMessage("You already own this creature")
+            } else {
+                player.sendMessage("This creature is owned by another player!")
+            }
+            return false
+        }
 
         if (mainItem.type == configuration.tamingMaterial && event.hand == EquipmentSlot.HAND
             && targetEntity.type == configuration.followerType) {
@@ -64,43 +69,33 @@ class PawsFollowerEntity(val plugin: Plugin, val mobEntity: Mob, override val co
         }
 
         if (areTamingConditionsMet(event)) {
-            if (!targetEntity.hasMetadata(PlayerEntityActionsListener.METADATA_OWNER_KEY)) {
-                server.logger.info("Player ${player.name} tamed ${targetEntity.name}")
-                val silverfish = targetEntity as Silverfish
+            onMobTame()
 
-                val goals = Bukkit.getMobGoals()
-                goals.removeGoal(silverfish, VanillaGoal.NEAREST_ATTACKABLE)
-                goals.removeGoal(silverfish, VanillaGoal.HURT_BY)
-                goals.removeGoal(silverfish, VanillaGoal.SILVERFISH_MERGE_WITH_STONE)
-                goals.removeGoal(silverfish, VanillaGoal.SILVERFISH_WAKE_UP_FRIENDS)
+            // Unfortunately it seems that the UUIDs must be stored serialized
+            server.logger.info("DEBUG Owner UUID: ${player.uniqueId}")
+            PawsMetadata.registerOwner(plugin, targetEntity, player)
+            PawsMetadata.addFollowerOf(plugin, player, targetEntity)
 
-                // Unfortunately it seems that the UUIDs must be stored serialized
-                server.logger.info("Owner UUID: ${player.uniqueId}")
-                val data = FixedMetadataValue(plugin, player.uniqueId.toString())
-                silverfish.setMetadata(PlayerEntityActionsListener.METADATA_OWNER_KEY, data)
-
-                val targetUUID = targetEntity.uniqueId.toString()
-                player.setMetadata(
-                    PlayerEntityActionsListener.METADATA_PLAYER_FOLLOWER,
-                    FixedMetadataValue(plugin, targetUUID)
-                )
-            } else {
-                val uuidCandidates = targetEntity.getMetadata(PlayerEntityActionsListener.METADATA_OWNER_KEY)
-                val uuidMetadata = uuidCandidates.find { it.owningPlugin == plugin }
-                if (uuidMetadata != null) {
-                    if (uuidMetadata.value().toString() == player.uniqueId.toString()) {
-                        // player.sendMessage("You already own this creature!")
-                        val loveParticleBuilder = ParticleBuilder(Particle.HEART)
-                        loveParticleBuilder.count(20)
-                        loveParticleBuilder.location(targetEntity.location)
-                        loveParticleBuilder.receivers(100)
-                        loveParticleBuilder.spawn()
-                    } else {
-                        player.sendMessage("This creature is owned by another player!")
-                    }
-                }
-            }
+            player.sendMessage("You tamed ${targetEntity.name}!")
+            server.logger.info("Player ${player.name} tamed ${targetEntity.name}")
         }
+
+        // TODO: Move petting logic
+        /*
+        val uuidCandidates = targetEntity.getMetadata(PlayerEntityActionsListener.METADATA_OWNER_KEY)
+        val uuidMetadata = uuidCandidates.find { it.owningPlugin == plugin }
+        if (uuidMetadata != null) {
+            if (uuidMetadata.value().toString() == player.uniqueId.toString()) {
+                // player.sendMessage("You already own this creature!")
+                val loveParticleBuilder = ParticleBuilder(Particle.HEART)
+                loveParticleBuilder.count(1)
+                loveParticleBuilder.location(targetEntity.location)
+                loveParticleBuilder.receivers(100)
+                loveParticleBuilder.spawn()
+            } else {
+                player.sendMessage("This creature is owned by another player!")
+            }
+        }*/
     }
 
     override fun onPlayerAttacked(entityDamageByEntityEvent: EntityDamageByEntityEvent) {
