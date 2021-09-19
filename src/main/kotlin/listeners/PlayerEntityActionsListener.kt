@@ -5,6 +5,7 @@ import com.destroystokyo.paper.entity.ai.VanillaGoal
 import core.entity.PawsFollowerConfiguration
 import core.entity.PawsFollowerEntity
 import core.entity.SupportedFollowerTypes
+import core.metadata.PawsMetadata
 import org.bukkit.Material
 import org.bukkit.entity.*
 import org.bukkit.event.EventHandler
@@ -49,16 +50,12 @@ class PlayerEntityActionsListener(val plugin: Plugin) : Listener {
         val server = damagee.server
         if (damager.type == EntityType.PLAYER) {
             val player = entityDamageByEntityEvent.damager as Player
-            val followerUUIDCandidates = player.getMetadata(METADATA_PLAYER_FOLLOWER)
-            val followerUUIDMetadataValue =  followerUUIDCandidates.find { it.owningPlugin == plugin }
-            followerUUIDMetadataValue?.value().let {
-                damagee.server.logger.info("Setting target for ${it.toString()}")
-                val follower = server.getEntity(UUID.fromString(it.toString()))
-                if (follower is LivingEntity) {
-                    follower.attack(damagee)
-                }
-                if (follower is Mob) {
-                    follower.target = damagee as? LivingEntity
+
+            if (PawsMetadata.hasFollowers(plugin, player)) {
+                for (mobFollower in PawsMetadata.getFollowersOf(plugin, player)) {
+                    mobFollower.attack(damagee)
+                    server.logger.info("Setting target for ${mobFollower.name}")
+                    mobFollower.target = damagee as? LivingEntity
                 }
             }
         }
