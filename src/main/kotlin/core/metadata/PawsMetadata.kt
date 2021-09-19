@@ -2,6 +2,7 @@ package core.metadata
 
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Entity
+import org.bukkit.entity.Mob
 import org.bukkit.entity.Player
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.Plugin
@@ -24,7 +25,7 @@ class PawsMetadata {
                 PersistentDataType.STRING)
         }
 
-        fun getFollowersOf(plugin: Plugin, player: Player) : MutableList<UUID>? {
+        fun getFollowerUUIDsOf(plugin: Plugin, player: Player) : MutableList<UUID>? {
             if (!hasFollowers(plugin, player)) {
                 return null
             }
@@ -38,14 +39,14 @@ class PawsMetadata {
             if (!hasFollowers(plugin, player)) {
                 return false
             }
-            return getFollowersOf(plugin, player)?.contains(entity.uniqueId) ?: false
+            return getFollowerUUIDsOf(plugin, player)?.contains(entity.uniqueId) ?: false
         }
 
         fun addFollowerOf(plugin: Plugin, player: Player, follower: Entity) : Boolean {
             if (isFollowerOf(plugin, player, follower)) {
                 return false
             }
-            var followers = getFollowersOf(plugin, player)
+            var followers = getFollowerUUIDsOf(plugin, player)
 
             if (followers == null) {
                 followers = mutableListOf(follower.uniqueId)
@@ -97,6 +98,29 @@ class PawsMetadata {
                 playerUUID
             )
             return true
+        }
+
+        fun removeEntityOwnerKey(plugin: Plugin, entity: Entity) {
+            entity.persistentDataContainer.remove(NamespacedKey(plugin,
+            PawsMetadataKeys.OWNER.key))
+        }
+
+        fun removePlayerFollowerKey(plugin: Plugin, player: Player) {
+            player.persistentDataContainer.remove(
+                NamespacedKey(plugin, PawsMetadataKeys.FOLLOWERS.key)
+            )
+        }
+
+        fun getFollowersOf(plugin: Plugin, player: Player?): MutableList<Mob> {
+            val mobList = mutableListOf<Mob>()
+            var entity: Entity? = null
+            for (uuid in player?.let { getFollowerUUIDsOf(plugin, it) }!!) {
+                entity = plugin.server.getEntity(uuid)
+                if (entity != null && entity is Mob) {
+                    mobList.add(entity)
+                }
+            }
+            return mobList
         }
 
     }

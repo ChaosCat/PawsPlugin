@@ -1,13 +1,12 @@
 package core.entity
 
 import com.destroystokyo.paper.entity.ai.VanillaGoal
-import core.commands.PawsFollowerCommand
-import core.commands.PawsFollowerCommandAttackTarget
-import core.commands.PawsFollowerCommandType
+import core.entity.commands.PawsFollowerCommand
+import core.entity.commands.PawsFollowerCommandAttackTarget
+import core.entity.commands.PawsFollowerCommandType
 import core.metadata.PawsMetadata
 import org.bukkit.Bukkit
 import org.bukkit.entity.Mob
-import org.bukkit.entity.Silverfish
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.EquipmentSlot

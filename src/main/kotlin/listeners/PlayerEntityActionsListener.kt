@@ -32,8 +32,8 @@ class PlayerEntityActionsListener(val plugin: Plugin) : Listener {
             // TODO: Make custom goal presets for removal per - creature
             conf.removeGoalKeys.add(VanillaGoal.HURT_BY as GoalKey<Mob>)
             conf.removeGoalKeys.add(VanillaGoal.NEAREST_ATTACKABLE)
-            conf.removeGoalKeys.add(VanillaGoal.SILVERFISH_WAKE_UP_FRIENDS as GoalKey<Mob>)
-            conf.removeGoalKeys.add(VanillaGoal.SILVERFISH_MERGE_WITH_STONE as GoalKey<Mob>)
+            // conf.removeGoalKeys.add(VanillaGoal.SILVERFISH_WAKE_UP_FRIENDS as GoalKey<Mob>)
+            // econf.removeGoalKeys.add(VanillaGoal.SILVERFISH_MERGE_WITH_STONE as GoalKey<Mob>)
             val pawsEntity = PawsFollowerEntity(plugin, entity as Mob, conf)
             // TODO: An InteractionResult enum should be added
             // TODO: for filtering cases and applying more logic if necessary

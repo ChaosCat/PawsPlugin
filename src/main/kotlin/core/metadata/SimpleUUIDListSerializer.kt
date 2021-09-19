@@ -14,12 +14,15 @@ class SimpleUUIDListSerializer {
         fun uuidMutListToString(list: MutableList<UUID>): String {
             var serialized = ""
             list.forEach { serialized += "$it," }
-            serialized.removeSuffix(",")
-            return serialized
+            return serialized.removeSuffix(",")
         }
 
         fun stringToMutUUIDList(string: String): MutableList<UUID> {
-            return string.split(',').map { UUID.fromString(it) }.toMutableList()
+            return string.split(',').map {
+                // This should never fail, throws IllegalArgumentException if there
+                // is an unserializable UUID
+                UUID.fromString(it)
+            }.toMutableList()
         }
     }
 }

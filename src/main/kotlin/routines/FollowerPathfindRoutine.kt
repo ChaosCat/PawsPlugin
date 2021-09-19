@@ -1,5 +1,6 @@
 package routines
 
+import core.metadata.PawsMetadata
 import listeners.PlayerEntityActionsListener
 import org.bukkit.Server
 import org.bukkit.entity.Mob
@@ -22,22 +23,18 @@ class FollowerPathfindRoutine(private val plugin: Plugin, private val server: Se
         for (player in players) {
             // This must be null-check exhaustive as these operations are not atomic and there may be
             // edge-case races
-            if (player?.hasMetadata(PlayerEntityActionsListener.METADATA_PLAYER_FOLLOWER) == true) {
-                val followerUUIDs = player?.getMetadata(PlayerEntityActionsListener.METADATA_PLAYER_FOLLOWER)
-                val entityUUIDMetadataValue = followerUUIDs.find { it.owningPlugin == plugin } ?: continue
-                val entityUUID = entityUUIDMetadataValue.value().toString()
-                // server.logger.info("Entity UUID string: ${entityUUID}.")
-                val entity = server.getEntity(UUID.fromString(entityUUID))
-                if (entity is Mob) {
-                    val follower = entity as? Mob
+            if (PawsMetadata.hasFollowers(plugin, player)) {
+                for (follower in PawsMetadata.getFollowersOf(plugin, player)) {
                     // Only re-route when no current target is set
                     if (follower?.target == null || follower?.target?.isDead == true) {
                         follower?.target = null
-                        if (follower?.pathfinder?.hasPath() == true) {
+                        if (follower?.pathfinder?.hasPath()) {
                             follower?.pathfinder?.stopPathfinding()
                         }
                         val destination = player?.location
-                        follower?.pathfinder?.moveTo(destination.add(1.0, 0.0, 1.0))
+                        if (destination != null) {
+                            follower?.pathfinder?.moveTo(destination.add(1.0, 0.0, 1.0))
+                        }
                     }
                 }
             }

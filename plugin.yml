@@ -2,3 +2,7 @@ name: Paws
 main: PawsPluginMain
 version: 0.1
 api-version: 1.17
+commands:
+  clearfollowerskey:
+    description: remove Paws followers key for executing player
+    usage: /clearfollowerskey

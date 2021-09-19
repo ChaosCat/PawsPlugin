@@ -1,6 +1,6 @@
 package core.entity
 
-import core.commands.PawsFollowerCommand
+import core.entity.commands.PawsFollowerCommand
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Mob
 import org.bukkit.event.entity.EntityDamageByEntityEvent

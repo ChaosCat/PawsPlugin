@@ -1,4 +1,4 @@
-package core.commands
+package core.entity.commands
 
 import org.bukkit.Location
 
