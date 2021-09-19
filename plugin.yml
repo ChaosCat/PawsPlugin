@@ -1,0 +1,4 @@
+name: Paws
+main: PawsPluginMain
+version: 0.1
+api-version: 1.17
