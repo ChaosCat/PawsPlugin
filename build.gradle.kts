@@ -6,7 +6,7 @@ plugins {
 
 group = "io.github.chaoscat.paws"
 version = "1.0-SNAPSHOT"
-e
+
 repositories {
     mavenCentral()
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
