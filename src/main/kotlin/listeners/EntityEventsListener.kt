@@ -1,5 +1,6 @@
 package listeners
 
+import core.metadata.PawsMetadata
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDeathEvent
@@ -18,22 +19,13 @@ class EntityEventsListener(private val plugin: Plugin) : Listener {
     fun onEntityDeath(event: EntityDeathEvent) {
         val entity = event.entity
         val server = entity.server
-        if (entity.hasMetadata(PlayerEntityActionsListener.METADATA_OWNER_KEY)) {
-            val ownerUUIDCandidates = entity.getMetadata(PlayerEntityActionsListener.METADATA_OWNER_KEY)
-            val ownerUUIDMetadataValue = ownerUUIDCandidates.find { it.owningPlugin == plugin }
-            val owner = entity.server.getPlayer(ownerUUIDMetadataValue?.value().toString())
-            if (owner != null) {
-                owner.sendMessage("${entity.name} has died!")
-                if (owner.hasMetadata(PlayerEntityActionsListener.METADATA_PLAYER_FOLLOWER)) {
-                    owner.removeMetadata(PlayerEntityActionsListener.METADATA_PLAYER_FOLLOWER, plugin)
-                } else {
-                    server.logger.warning("WARNING! Weird state, " +
-                            "no metadata key `${PlayerEntityActionsListener.METADATA_PLAYER_FOLLOWER}` " +
-                            "was found for player ${owner.uniqueId} when ${entity.uniqueId} was still registered " +
-                            "as their follower")
-                }
+        if (PawsMetadata.hasOwner(plugin, entity)) {
+            val owner = PawsMetadata.getOwner(plugin, entity)
+            PawsMetadata.removeEntityOwnerKey(plugin, entity)
+            owner?.let {
+                it.sendMessage("${entity.name} has died!")
+                PawsMetadata.removeFollowerOf(plugin, it, entity)
             }
-
         }
     }
 

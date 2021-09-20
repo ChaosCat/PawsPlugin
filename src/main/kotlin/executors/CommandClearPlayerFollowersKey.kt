@@ -12,7 +12,7 @@ class CommandClearPlayerFollowersKey(private val plugin: Plugin) : CommandExecut
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender is Player) {
             val player = sender as Player
-            PawsMetadata.removePlayerFollowerKey(plugin, player)
+            PawsMetadata.removePlayerFollowersKey(plugin, player)
         }
         return true
     }

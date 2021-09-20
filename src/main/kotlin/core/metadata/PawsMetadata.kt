@@ -105,9 +105,31 @@ class PawsMetadata {
             PawsMetadataKeys.OWNER.key))
         }
 
-        fun removePlayerFollowerKey(plugin: Plugin, player: Player) {
+        fun removePlayerFollowersKey(plugin: Plugin, player: Player) {
             player.persistentDataContainer.remove(
                 NamespacedKey(plugin, PawsMetadataKeys.FOLLOWERS.key)
+            )
+        }
+
+        fun removeFollowerOf(plugin: Plugin, player: Player, follower: Entity) {
+            val followerUUIDs = getFollowerUUIDsOf(plugin, player)
+            if (followerUUIDs == null) {
+                plugin.server.logger.warning("DEBUG Failed removing follower ${follower.name} " +
+                        "(Player may be offline)")
+                return
+            }
+            followerUUIDs.remove(follower.uniqueId)
+            // Key should be cleared here if there are no more followers
+            // So that "hasFollowers" will return false (Since we don't want to iterate
+            // on follower logic for an empty follower list)
+            if (followerUUIDs.isEmpty()) {
+                removePlayerFollowersKey(plugin, player)
+                return
+            }
+            player.persistentDataContainer.set(
+                NamespacedKey(plugin, PawsMetadataKeys.FOLLOWERS.key),
+                PersistentDataType.STRING,
+                SimpleUUIDListSerializer.uuidMutListToString(followerUUIDs)
             )
         }
 
