@@ -11,9 +11,9 @@ class FollowerPathfindRoutine(private val plugin: Plugin, private val server: Se
 
     companion object {
         // Random delay in minecraft ticks
-        val EXECUTION_DELAY: Long = 0
+        const val EXECUTION_DELAY: Long = 0
         // Execution interval in minecraft ticks
-        val EXECUTION_INTERVAL: Long = 20
+        const val EXECUTION_INTERVAL: Long = 20 * 10
     }
 
     override fun run() {
@@ -24,6 +24,8 @@ class FollowerPathfindRoutine(private val plugin: Plugin, private val server: Se
             // This must be null-check exhaustive as these operations are not atomic and there may be
             // edge-case races
             if (PawsMetadata.hasFollowers(plugin, player)) {
+                // Find facing direction for follower target randomization
+                val random = Random()
                 for (follower in PawsMetadata.getFollowersOf(plugin, player)) {
                     // Only re-route when no current target is set
                     if (follower?.target == null || follower?.target?.isDead == true) {
@@ -33,7 +35,13 @@ class FollowerPathfindRoutine(private val plugin: Plugin, private val server: Se
                         }
                         val destination = player?.location
                         if (destination != null) {
-                            follower?.pathfinder?.moveTo(destination.add(1.0, 0.0, 1.0))
+                            follower?.pathfinder?.moveTo(
+                                destination.add(
+                                    (-10.0 + random.nextInt(20)),
+                                    0.0,
+                                    (-10.0 + random.nextInt(20))
+                                )
+                            )
                         }
                     }
                 }

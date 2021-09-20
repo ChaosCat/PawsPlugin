@@ -9,4 +9,8 @@ enum class SupportedFollowerTypes(val entityType: EntityType) {
      */
     SILVERFISH(EntityType.SILVERFISH),
     ZOMBIE(EntityType.ZOMBIE),
+    SKELETON(EntityType.SKELETON),
+    CREEPER(EntityType.CREEPER),
+    SPIDER(EntityType.SPIDER),
+    SNOWMAN(EntityType.SNOWMAN)
 }
